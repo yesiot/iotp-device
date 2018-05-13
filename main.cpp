@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
 {
     const std::string c_deviceName = "rpi0Test";
 
-    if(argc < 1) {
+    if(argc < 2) {
         std::cerr << "Invalid number of arguments" << std::endl;
         showUsage();
         return -1;
