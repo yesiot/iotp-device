@@ -40,14 +40,19 @@ int main(int argc, char* argv[])
     connOpts.set_user_name(userName);
     connOpts.set_password(userPassword);
 
-    try {
 
-        const auto qos = 0;
-        const auto retained = false;
+    std::string statusStr = "DEAD";
+
+    //Last will - message that is send by broker if connection breaks
+    connOpts.set_will({c_deviceName + "/status", statusStr.c_str(), statusStr.size()});
+
+    try {
 
         cli.connect(connOpts);
 
-        cli.publish(c_deviceName + "/discovery", c_deviceName.c_str(), c_deviceName.size(), qos, retained);
+        statusStr = "ALIVE";
+        cli.publish(c_deviceName + "/status", statusStr.c_str(), statusStr.size());
+
 
         auto cnt = 0;
         while(true) {
@@ -55,7 +60,7 @@ int main(int argc, char* argv[])
             // Now try with itemized publish.
             std::string dynamic = std::to_string(cnt);
 
-            cli.publish(c_deviceName + "/counter", dynamic.c_str(), dynamic.size(), qos, retained);
+            cli.publish(c_deviceName + "/counter", dynamic.c_str(), dynamic.size());
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
 
