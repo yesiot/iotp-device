@@ -2,35 +2,37 @@
 #include "mqtt/async_client.h"
 #include "mqtt/client.h"
 
+#include "config_reader.h"
 
-std::string connectionUrl(const std::string& hostName, int portNumber) {
-    return std::string(hostName) + ":" + std::to_string(portNumber);
-}
+
 
 void showUsage() {
     std::cout << "Usage:\n"\
-                 "paho_test <user> <password>\n\n"\
-                 "user - username used in the mqtt broker authentication\n"\
+                 "paho_test <confiSettingValueg file name>\n\n"\
+                 "config file in the json format containing following keys:\n"\
+                 "host     - address of the mqtt broker\n"\
+                 "port     - port number used by mqtt service\n"\
+                 "user     - username used in the mqtt broker authentication\n"\
                  "password - password used for broker authentication" << std::endl;
 }
 
 int main(int argc, char* argv[])
 {
-    //TODO: move to setting file
     const std::string c_deviceName = "rpi0Test";
-    const std::string c_serverName = "m21.cloudmqtt.com";
-    const int         c_mqttPortNumber = 18335;
 
-    if(argc < 2) {
+    if(argc < 1) {
         std::cerr << "Invalid number of arguments" << std::endl;
         showUsage();
         return -1;
     }
 
-    std::string userName(argv[1]);
-    std::string userPassword(argv[2]);
+    ConfigReader configReader;
+    configReader.readConfigFile(argv[1]);
 
-    mqtt::client cli(connectionUrl(c_serverName, c_mqttPortNumber), c_deviceName);
+    std::string userName = configReader.getUserName();
+    std::string userPassword = configReader.getPassword();
+
+    mqtt::client cli(configReader.getConnectionUrl(), c_deviceName);
 
     mqtt::connect_options connOpts;
     connOpts.set_keep_alive_interval(20);

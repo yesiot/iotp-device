@@ -1,4 +1,4 @@
-# Mqtt viewer application
+# Mqtt device application
 
 This project is a part of the IoT playground - collection of simple programs used to experiment with different IoT solutions.
 
