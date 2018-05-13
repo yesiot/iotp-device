@@ -50,15 +50,14 @@ int main(int argc, char* argv[])
 
         cli.connect(connOpts);
 
-        statusStr = "ALIVE";
-        cli.publish(c_deviceName + "/status", statusStr.c_str(), statusStr.size());
-
-
         auto cnt = 0;
         while(true) {
 
+            statusStr = "ALIVE";
+            cli.publish(c_deviceName + "/status", statusStr.c_str(), statusStr.size());
+
             // Now try with itemized publish.
-            std::string dynamic = std::to_string(cnt);
+            std::string dynamic = std::to_string(cnt++);
 
             cli.publish(c_deviceName + "/counter", dynamic.c_str(), dynamic.size());
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
