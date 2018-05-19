@@ -10,7 +10,8 @@ link_directories("${EXT_PATH}/lib")
 set(CMAKE_CXX_STANDARD 14)
 
 set(SOURCE_FILES    main.cpp
-                    config_reader.cpp)
+                    config_reader.cpp
+                    image_provider.cpp)
 
 add_executable(paho_test ${SOURCE_FILES})
 target_link_libraries(paho_test paho-mqttpp3)

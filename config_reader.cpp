@@ -7,7 +7,6 @@
 namespace pt = boost::property_tree;
 
 bool ConfigReader::readConfigFile(const std::string& fileName) {
-
     pt::read_json(fileName, root);
 }
 
@@ -24,7 +23,6 @@ std::string ConfigReader::getPassword() {
 }
 
 std::string ConfigReader::getConnectionUrl() {
-
     auto host = root.get<std::string>(c_hostKey);
     auto port = root.get<int>(c_portKey);
 

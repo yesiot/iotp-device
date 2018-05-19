@@ -2,8 +2,7 @@
 #include "mqtt/async_client.h"
 #include "mqtt/client.h"
 
-#include "camera_controller.h"
-
+#include "image_provider.h"
 #include "config_reader.h"
 
 
@@ -27,6 +26,8 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    ImageProvider imageProvider;
+
     ConfigReader configReader;
     configReader.readConfigFile(argv[1]);
 
@@ -49,9 +50,6 @@ int main(int argc, char* argv[])
     //Last will - message that is send by broker if connection breaks
     connOpts.set_will({deviceName + "/status", statusStr.c_str(), statusStr.size()});
 
-    CameraController cameraController;
-
-
     try {
 
         cli.connect(connOpts);
@@ -69,7 +67,7 @@ int main(int argc, char* argv[])
 
             cli.publish(deviceName + "/counter", dynamic.c_str(), dynamic.size());
 
-            data = cameraController.MakeSinglePicture();
+            data = imageProvider.getImage();
             cli.publish(deviceName + "/picture", &data[54], data.size() - 54);
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
