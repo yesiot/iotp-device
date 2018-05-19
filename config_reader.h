@@ -10,6 +10,7 @@
 
 class ConfigReader {
 
+    static constexpr const char * c_clientNameKey = "name";
     static constexpr const char * c_hostKey = "host";
     static constexpr const char * c_portKey = "port";
     static constexpr const char * c_userKey = "user";
@@ -22,6 +23,7 @@ public:
 
     bool readConfigFile(const std::string& fileName);
 
+    std::string getClientName();
     std::string getUserName();
     std::string getPassword();
     std::string getConnectionUrl();

@@ -12,6 +12,7 @@ void showUsage() {
     std::cout << "Usage:\n"\
                  "paho_test <config file name>\n\n"\
                  "config file in the json format containing following keys:\n"\
+                 " name     - client name"
                  " host     - address of the mqtt broker\n"\
                  " port     - port number used by mqtt service\n"\
                  " user     - username used in the mqtt broker authentication\n"\
@@ -20,8 +21,6 @@ void showUsage() {
 
 int main(int argc, char* argv[])
 {
-    const std::string c_deviceName = "rpi0Test";
-
     if(argc < 2) {
         std::cerr << "Invalid number of arguments" << std::endl;
         showUsage();
@@ -31,10 +30,11 @@ int main(int argc, char* argv[])
     ConfigReader configReader;
     configReader.readConfigFile(argv[1]);
 
-    std::string userName = configReader.getUserName();
-    std::string userPassword = configReader.getPassword();
+    auto deviceName = configReader.getClientName();
+    auto userName = configReader.getUserName();
+    auto userPassword = configReader.getPassword();
 
-    mqtt::client cli(configReader.getConnectionUrl(), c_deviceName);
+    mqtt::client cli(configReader.getConnectionUrl(), deviceName);
 
     mqtt::connect_options connOpts;
     connOpts.set_keep_alive_interval(20);
@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
     std::string statusStr = "DEAD";
 
     //Last will - message that is send by broker if connection breaks
-    connOpts.set_will({c_deviceName + "/status", statusStr.c_str(), statusStr.size()});
+    connOpts.set_will({deviceName + "/status", statusStr.c_str(), statusStr.size()});
 
     CameraController cameraController;
 
@@ -62,17 +62,17 @@ int main(int argc, char* argv[])
         while(true) {
 
             statusStr = "ALIVE";
-            cli.publish(c_deviceName + "/status", statusStr.c_str(), statusStr.size());
+            cli.publish(deviceName + "/status", statusStr.c_str(), statusStr.size());
 
             // Now try with itemized publish.
             std::string dynamic = std::to_string(cnt++);
 
-            cli.publish(c_deviceName + "/counter", dynamic.c_str(), dynamic.size());
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            cli.publish(deviceName + "/counter", dynamic.c_str(), dynamic.size());
 
             data = cameraController.MakeSinglePicture();
-            cli.publish(c_deviceName + "/picture", data.data(), data.size());
+            cli.publish(deviceName + "/picture", &data[54], data.size() - 54);
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            std::cout << data.size() << std::endl;
         }
 
         cli.disconnect();

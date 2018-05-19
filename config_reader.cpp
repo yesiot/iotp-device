@@ -11,6 +11,10 @@ bool ConfigReader::readConfigFile(const std::string& fileName) {
     pt::read_json(fileName, root);
 }
 
+std::string ConfigReader::getClientName() {
+    return root.get<std::string>(c_clientNameKey);
+}
+
 std::string ConfigReader::getUserName() {
     return root.get<std::string>(c_userKey);
 }
