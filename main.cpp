@@ -72,7 +72,6 @@ int main(int argc, char* argv[])
             data = cameraController.MakeSinglePicture();
             cli.publish(deviceName + "/picture", &data[54], data.size() - 54);
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            std::cout << data.size() << std::endl;
         }
 
         cli.disconnect();
