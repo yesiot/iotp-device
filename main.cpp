@@ -68,8 +68,8 @@ int main(int argc, char* argv[])
             cli.publish(deviceName + "/counter", dynamic.c_str(), dynamic.size());
 
             data = imageProvider.getImage();
-            cli.publish(deviceName + "/picture", &data[54], data.size() - 54);
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            cli.publish(deviceName + "/picture", data.data(), data.size());
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
 
         cli.disconnect();
