@@ -1,7 +1,6 @@
 #include <iostream>
-#include "mqtt/async_client.h"
-#include "mqtt/client.h"
 
+#include "mqtt_engine.h"
 #include "image_provider.h"
 #include "config_reader.h"
 
@@ -26,53 +25,50 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    ImageProvider imageProvider;
-
     ConfigReader configReader;
     configReader.readConfigFile(argv[1]);
 
+    auto hostAddress = configReader.getHostAddress();
+    auto portNr = configReader.getPortNr();
     auto deviceName = configReader.getClientName();
     auto userName = configReader.getUserName();
     auto userPassword = configReader.getPassword();
 
-    mqtt::client cli(configReader.getConnectionUrl(), deviceName);
+    MqttEngine    mqttEngine(deviceName, hostAddress, portNr);
+    ImageProvider imageProvider;
 
-    mqtt::connect_options connOpts;
-    connOpts.set_keep_alive_interval(20);
-    connOpts.set_clean_session(true);
     if(!userName.empty()) {
-        connOpts.set_user_name(userName);
-        connOpts.set_password(userPassword);
+        mqttEngine.SetPassword(userName, userPassword);
     }
 
-    std::string statusStr = "DEAD";
-
-    //Last will - message that is send by broker if connection breaks
-    connOpts.set_will({deviceName + "/status", statusStr.c_str(), statusStr.size()});
+    if(!mqttEngine.Connect()) {
+        std::cerr << "Cannot connect to the MQTT server" << std::endl;
+        return -1;
+    }
 
     try {
 
-        cli.connect(connOpts);
-
+        const std::string aliveStr = "ALIVE";
         auto cnt = 0;
-        std::vector<unsigned char> data;
+        std::vector<unsigned char> image;
+
 
         while(true) {
 
-            statusStr = "ALIVE";
-            cli.publish(deviceName + "/status", statusStr.c_str(), statusStr.size());
 
-            // Now try with itemized publish.
-            std::string dynamic = std::to_string(cnt++);
+            mqttEngine.Publish("status", aliveStr.c_str(), aliveStr.size());
+            std::string cntStr = std::to_string(cnt++);
+            mqttEngine.Publish("counter", cntStr.c_str(), cntStr.size());
 
-            cli.publish(deviceName + "/counter", dynamic.c_str(), dynamic.size());
+            image = imageProvider.getImage();
+            mqttEngine.Publish("picture", image.data(), image.size());
 
-            data = imageProvider.getImage();
-            cli.publish(deviceName + "/picture", data.data(), data.size());
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
 
-        cli.disconnect();
+        mqttEngine.Disconnect();
+
+
     }
     catch (const mqtt::exception& exc) {
         std::cerr << "Error: " << exc.what() << " ["

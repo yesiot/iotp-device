@@ -22,9 +22,10 @@ std::string ConfigReader::getPassword() {
     return root.get<std::string>(c_passwordKey);
 }
 
-std::string ConfigReader::getConnectionUrl() {
-    auto host = root.get<std::string>(c_hostKey);
-    auto port = root.get<int>(c_portKey);
+std::string ConfigReader::getHostAddress() {
+    return root.get<std::string>(c_hostKey);
+}
 
-    return std::string(host) + ":" + std::to_string(port);
+int ConfigReader::getPortNr() {
+    return root.get<int>(c_portKey);
 }

@@ -26,7 +26,8 @@ public:
     std::string getClientName();
     std::string getUserName();
     std::string getPassword();
-    std::string getConnectionUrl();
+    std::string getHostAddress();
+    int         getPortNr();
 
 private:
 
