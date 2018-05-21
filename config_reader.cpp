@@ -3,11 +3,19 @@
 //
 
 #include "config_reader.h"
+#include <iostream>
+#include <boost/filesystem.hpp>
 
 namespace pt = boost::property_tree;
 
 bool ConfigReader::readConfigFile(const std::string& fileName) {
+    if(!boost::filesystem::exists(fileName)) {
+        std::cerr << fileName << " does not exist" << std::endl;
+        return false;
+    }
+
     pt::read_json(fileName, root);
+    return !root.empty();
 }
 
 std::string ConfigReader::getClientName() {
