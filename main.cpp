@@ -17,8 +17,23 @@ void showUsage() {
                  " password - password used for broker authentication" << std::endl;
 }
 
+std::atomic<bool> sendPicture{false};
+
+void handleIncomingMessage(const std::string& topic, const void* payload, size_t payloadSize) {
+    std::cout << "New message arrived: " << topic << std::endl;
+    std::string msg = std::string((const char*)payload, payloadSize);
+
+    if(msg == "on") {
+        sendPicture = true;
+    } else {
+        sendPicture = false;
+    }
+}
+
 int main(int argc, char* argv[])
 {
+    std::cout << "PAHO TEST V 1.0" << std::endl;
+
     if(argc < 2) {
         std::cerr << "Invalid number of arguments" << std::endl;
         showUsage();
@@ -35,6 +50,8 @@ int main(int argc, char* argv[])
     auto userPassword = configReader.getPassword();
 
     MqttEngine    mqttEngine(deviceName, hostAddress, portNr);
+    mqttEngine.onNewMessage = handleIncomingMessage;
+
     ImageProvider imageProvider;
 
     if(!userName.empty()) {
@@ -54,16 +71,22 @@ int main(int argc, char* argv[])
 
 
         while(true) {
-
+            std::cout << "." << std::endl;
 
             mqttEngine.Publish("status", aliveStr.c_str(), aliveStr.size());
             std::string cntStr = std::to_string(cnt++);
             mqttEngine.Publish("counter", cntStr.c_str(), cntStr.size());
 
-            image = imageProvider.getImage();
-            mqttEngine.Publish("picture", image.data(), image.size());
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            if(sendPicture) {
+                image = imageProvider.getImage();
+                mqttEngine.Publish("picture", image.data(), image.size());
+            }
+            else {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            }
+
+
         }
 
         mqttEngine.Disconnect();

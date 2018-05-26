@@ -22,7 +22,9 @@ void MqttEngine::SetPassword(const std::string& userName, const std::string& pas
 }
 
 bool MqttEngine::Connect() {
+    m_mqttClient->set_callback(*this);
     m_mqttClient->connect(m_connectOptions);
+    m_mqttClient->subscribe("master/#");
     return m_mqttClient->is_connected();
 }
 
@@ -34,3 +36,22 @@ void MqttEngine::Publish(const std::string& topic, const void* payload, size_t p
     m_mqttClient->publish(m_deviceName + "/" + topic, payload, payloadSize);
 }
 
+void MqttEngine::message_arrived(mqtt::const_message_ptr msg) {
+    mqtt::callback::message_arrived(msg);
+
+    std::cout << "Message arrived" << std::endl;
+
+    if(onNewMessage) {
+        onNewMessage(msg->get_topic(), msg->get_payload().data(), msg->get_payload().size());
+    }
+}
+
+void MqttEngine::connected(const mqtt::string &cause) {
+    mqtt::callback::connected(cause);
+    std::cout << "Connected " << cause << std::endl;
+
+}
+
+void MqttEngine::delivery_complete(mqtt::delivery_token_ptr tok) {
+    mqtt::callback::delivery_complete(tok);
+}

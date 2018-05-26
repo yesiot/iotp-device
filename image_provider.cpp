@@ -4,7 +4,9 @@
 
 #include "image_provider.h"
 
-ImageProvider::ImageProvider() {
+ImageProvider::ImageProvider() :
+        m_cameraController(640, 480)
+{
 }
 
 std::vector<uint8_t > ImageProvider::getImage()   {

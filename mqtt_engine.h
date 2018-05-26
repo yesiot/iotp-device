@@ -4,8 +4,9 @@
 #include "mqtt/async_client.h"
 #include "mqtt/client.h"
 #include <memory>
+#include <functional>
 
-class MqttEngine {
+class MqttEngine : public mqtt::callback {
     static const int  c_keepAliveIntervalMs = 20;
     static const bool c_cleanSession = true;
 
@@ -17,6 +18,14 @@ public:
     void Disconnect();
 
     void Publish(const std::string& topic, const void* payload, size_t payloadSize);
+
+    void message_arrived(mqtt::const_message_ptr msg) override;
+
+    void connected(const mqtt::string &cause) override;
+
+    void delivery_complete(mqtt::delivery_token_ptr tok) override;
+
+    std::function<void(const std::string&, const void*, size_t)> onNewMessage = nullptr;
 
 private:
     std::unique_ptr<mqtt::client> m_mqttClient;
